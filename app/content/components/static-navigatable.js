@@ -56,6 +56,52 @@ class StaticNavigatable extends Navigatable {
         }
     }
 
+    up() {
+        this._navigateVertical((r1, r2) => r1.bottom < r2.top, candidates => Math.max(...candidates.map(c => c.rect.bottom)));
+    }
+
+    down() {
+        this._navigateVertical((r1, r2) => r1.top > r2.bottom, candidates => Math.min(...candidates.map(c => c.rect.top)));
+    }
+
+    _navigateVertical(predicate, extrema) {
+        if (this.position === -1) {
+            return;
+        }
+
+        const currentComponent = this.getSelectedComponent();
+        const currentRect = currentComponent.getBoundingClientRect();
+        let candidates = [];
+
+        this.components.forEach((component, index) => {
+            if (index !== this.position) {
+                const rect = component.getBoundingClientRect();
+                if (predicate(rect, currentRect)) {
+                    candidates.push({ component, rect, index });
+                }
+            }
+        });
+
+        if (candidates.length > 0) {
+            const extremeValue = extrema(candidates);
+            const rowComponents = candidates.filter(c => (predicate(c.rect, currentRect) ? c.rect.bottom : c.rect.top) === extremeValue);
+
+            const currentCenterX = currentRect.left + currentRect.width / 2;
+            let closest = rowComponents[0];
+            let minDistance = Math.abs((closest.rect.left + closest.rect.width / 2) - currentCenterX);
+
+            for (let i = 1; i < rowComponents.length; i++) {
+                const candidate = rowComponents[i];
+                const distance = Math.abs((candidate.rect.left + candidate.rect.width / 2) - currentCenterX);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closest = candidate;
+                }
+            }
+            this.select(closest.index);
+        }
+    }
+
     enter(params) {
         this.select(0);
     }

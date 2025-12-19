@@ -146,16 +146,21 @@ class NavigatablePage {
     }
 
     onDirectionAction(direction) {
-        if (direction === DIRECTION.UP) {
-            if (this.position > 0) {
-                this.setNavigatable(this.position - 1);
+        if (this.navigatables[this.position]) {
+            switch (direction) {
+                case DIRECTION.UP:
+                    this.navigatables[this.position].up();
+                    break;
+                case DIRECTION.DOWN:
+                    this.navigatables[this.position].down();
+                    break;
+                case DIRECTION.LEFT:
+                    this.navigatables[this.position].left();
+                    break;
+                case DIRECTION.RIGHT:
+                    this.navigatables[this.position].right();
+                    break;
             }
-        } else if (direction === DIRECTION.DOWN) {
-            this.setNavigatable(this.position + 1);
-        } else if (direction === DIRECTION.LEFT) {
-            this.navigatables[this.position].left();
-        } else if (direction === DIRECTION.RIGHT) {
-            this.navigatables[this.position].right();
         }
     }
 }

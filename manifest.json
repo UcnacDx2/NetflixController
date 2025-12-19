@@ -27,6 +27,7 @@
                 "static/js/gamepad-icons@1.2.2.js",
                 "static/js/pseudostyler@1.0.8.js",
                 "app/content/components/direction.js",
+                "app/content/components/DirectionalInput.js",
                 "app/content/components/navigatable.js",
                 "app/content/components/static-navigatable.js",
                 "app/content/components/title-panel.js",
