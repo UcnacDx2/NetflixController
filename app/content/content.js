@@ -16,6 +16,7 @@ let keyboard = null;
 let handlerHistory = [];
 let currentHandler = null;
 let actionHandler = new ActionHandler();
+let directionalInput = new DirectionalInput();
 let connectionHintBar = new ConnectionHintBar();
 let compatibilityWarning = new CompatibilityWarningBar();
 let errorBar = new ErrorBar();
@@ -46,6 +47,16 @@ storage.addListener('buttonImageMapping', () => actionHandler.updateHints());
 storage.addListener('showConnectionHint', showConnectionHint);
 storage.addListener('showCompatibilityWarning', updateCompatibility);
 storage.load();
+
+directionalInput.onDirection = direction => {
+    try {
+        if (actionHandler.onDirection) {
+            actionHandler.onDirection(direction);
+        }
+    } catch (error) {
+        showTempError(error);
+    }
+};
 
 chrome.runtime.onMessage.addListener((request, sender, sendMessage) => {
     if (request.message === 'locationChanged') {
@@ -196,14 +207,6 @@ gamepads.addEventListener('connect', e => {
             showTempError(error);
         }
     })
-    e.gamepad.addEventListener('joystickmove', e => {
-        try {
-            checkJoystickDirection(e.gamepad, e.horizontalIndex, e.horizontalValue, DIRECTION.RIGHT, DIRECTION.LEFT);
-            checkJoystickDirection(e.gamepad, e.verticalIndex, e.verticalValue, DIRECTION.DOWN, DIRECTION.UP);
-        } catch (error) {
-            showTempError(error);
-        }
-    }, StandardMapping.Axis.JOYSTICK_LEFT);
 })
 gamepads.addEventListener('disconnect', e => {
     numGamepads--;
@@ -215,33 +218,6 @@ gamepads.addEventListener('disconnect', e => {
     log(`Gamepad disconnected: ${e.gamepad.gamepad.id}`);
 })
 gamepads.start();
-
-// TODO: rethink this messy code; integrate rate limited polling into gamepads.js?
-let timeouts = {};
-let directions = {};
-
-function checkJoystickDirection(gamepad, axis, value, pos, neg) {
-    if (Math.abs(value) >= 1 - gamepad.joystickDeadzone) {
-        let direction = value > 0 ? pos : neg;
-        if (!(axis in directions) || directions[axis] !== direction) {
-            directions[axis] = direction;
-            rateLimitJoystickDirection(axis, 500);
-        }
-    } else {
-        directions[axis] = -1;
-        if (axis in timeouts) {
-            clearTimeout(timeouts[axis]);
-            delete timeouts[axis];
-        }
-    }
-}
-
-function rateLimitJoystickDirection(axis, rateMillis) {
-    if (directions[axis] !== -1) {
-        actionHandler.onDirection(directions[axis]);
-        timeouts[axis] = setTimeout(() => rateLimitJoystickDirection(axis, rateMillis), rateMillis);
-    }
-}
 
 function openSearch() {
     let searchButton = document.querySelector('.searchTab');
