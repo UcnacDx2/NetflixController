@@ -193,6 +193,7 @@ gamepads.addEventListener('connect', e => {
     showActionHints();
     updateCompatibility();
     log(`Gamepad connected: ${e.gamepad.gamepad.id}`);
+    directionalInput.addGamepad(e.gamepad);
     e.gamepad.addEventListener('buttonpress', e => {
         try {
             actionHandler.onButtonPress(e.index);

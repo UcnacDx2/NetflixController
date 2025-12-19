@@ -6,7 +6,20 @@ class DirectionalInput {
         this.rateLimitMillis = rateLimitMillis;
 
         window.addEventListener('keydown', this._handleKeyDown.bind(this));
-        gamepads.addEventListener('connect', this._handleGamepadConnect.bind(this));
+    }
+
+    addGamepad(gamepad) {
+        // D-pad
+        gamepad.addEventListener('buttonpress', e => this._handleDpadPress(e.index), StandardMapping.Button.D_PAD_UP);
+        gamepad.addEventListener('buttonpress', e => this._handleDpadPress(e.index), StandardMapping.Button.D_PAD_DOWN);
+        gamepad.addEventListener('buttonpress', e => this._handleDpadPress(e.index), StandardMapping.Button.D_PAD_LEFT);
+        gamepad.addEventListener('buttonpress', e => this._handleDpadPress(e.index), StandardMapping.Button.D_PAD_RIGHT);
+
+        // Joystick
+        gamepad.addEventListener('joystickmove', e => {
+            this._checkJoystickDirection(e.gamepad, e.horizontalIndex, e.horizontalValue, DIRECTION.RIGHT, DIRECTION.LEFT);
+            this._checkJoystickDirection(e.gamepad, e.verticalIndex, e.verticalValue, DIRECTION.DOWN, DIRECTION.UP);
+        }, StandardMapping.Axis.JOYSTICK_LEFT);
     }
 
     _handleKeyDown(e) {
@@ -29,20 +42,6 @@ class DirectionalInput {
         if (direction !== -1) {
             this.onDirection(direction);
         }
-    }
-
-    _handleGamepadConnect(e) {
-        // D-pad
-        e.gamepad.addEventListener('buttonpress', e => this._handleDpadPress(e.index), StandardMapping.Button.D_PAD_UP);
-        e.gamepad.addEventListener('buttonpress', e => this._handleDpadPress(e.index), StandardMapping.Button.D_PAD_DOWN);
-        e.gamepad.addEventListener('buttonpress', e => this._handleDpadPress(e.index), StandardMapping.Button.D_PAD_LEFT);
-        e.gamepad.addEventListener('buttonpress', e => this._handleDpadPress(e.index), StandardMapping.Button.D_PAD_RIGHT);
-
-        // Joystick
-        e.gamepad.addEventListener('joystickmove', e => {
-            this._checkJoystickDirection(e.gamepad, e.horizontalIndex, e.horizontalValue, DIRECTION.RIGHT, DIRECTION.LEFT);
-            this._checkJoystickDirection(e.gamepad, e.verticalIndex, e.verticalValue, DIRECTION.DOWN, DIRECTION.UP);
-        }, StandardMapping.Axis.JOYSTICK_LEFT);
     }
 
     _handleDpadPress(index) {
